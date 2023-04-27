@@ -5,17 +5,17 @@ class Transfer < Transaction
 
   def create
     ActiveRecord::Base.transaction do
-      save!
-      update_balance_sender
-      update_balance_receiver
+      self.save!
+      self.update_balance_sender
+      self.update_balance_receiver
     rescue StandardError => e
-      errors.add(:base, e.message) if errors.empty?
+      errors.add(:base, e.message) if self.errors.empty?
       raise ActiveRecord::Rollback
     end
   end
 
   def update_balance_sender
-    @user = from
+    @user = self.from
     @user.update! balance: @user.balance - amount.to_i
   end
 
@@ -25,6 +25,8 @@ class Transfer < Transaction
   end
 
   def validate_sender_receiver
-    errors.add(:from_id, 'Cannot transfer to self') if from.id == to_id
+    if self.from.id == self.to_id
+       errors.add(:from_id, "Cannot transfer to self")
+    end 
   end
 end
